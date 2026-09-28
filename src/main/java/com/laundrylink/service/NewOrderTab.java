@@ -6,7 +6,7 @@ import com.laundrylink.model.Invoice;
 import com.laundrylink.model.LaundryOrder;
 
 /** Business logic of placing an order and calculating its bill. */
-public class OrderService {
+class OrderService {
 
     public static final double DISCOUNT_THRESHOLD = 500.0; // subtotal at or above this gets a discount
     public static final double DISCOUNT_RATE = 0.10;       // 10%
