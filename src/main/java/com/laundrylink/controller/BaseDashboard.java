@@ -1,6 +1,8 @@
 package com.laundrylink.controller;
 
 import com.laundrylink.model.User;
+import com.laundrylink.task.ReminderTask;
+import com.laundrylink.task.TaskManager;
 import com.laundrylink.util.SceneNavigator;
 import com.laundrylink.util.Session;
 import javafx.geometry.Insets;
@@ -13,14 +15,25 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-/** Common layout of all dashboards: header on top, subclasses fill the center. */
+import java.time.LocalTime;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+/** Common layout of all dashboards + background reminders. */
 public abstract class BaseDashboard extends BorderPane {
 
     protected final User user;
+    private final Label notificationLabel = new Label("No notifications yet");
+    private final ScheduledFuture<?> reminderFuture;
 
     protected BaseDashboard(User user) {
         this.user = user;
         setTop(buildHeader());
+        setBottom(buildNotificationBar());
+
+        // reminder check starts after 3 seconds and repeats every 30 seconds
+        reminderFuture = TaskManager.scheduleRepeating(
+                new ReminderTask(user, this::showNotification), 3, 30, TimeUnit.SECONDS);
     }
 
     private HBox buildHeader() {
@@ -47,7 +60,20 @@ public abstract class BaseDashboard extends BorderPane {
         return header;
     }
 
+    private HBox buildNotificationBar() {
+        notificationLabel.getStyleClass().add("notification-label");
+        HBox bar = new HBox(notificationLabel);
+        bar.setPadding(new Insets(6, 20, 6, 20));
+        bar.getStyleClass().add("notification-bar");
+        return bar;
+    }
+
+    protected void showNotification(String message) {
+        notificationLabel.setText(LocalTime.now().withNano(0) + "   " + message);
+    }
+
     protected void logout() {
+        reminderFuture.cancel(true); // stop this user's reminder task
         Session.clear();
         SceneNavigator.showLogin();
     }

@@ -11,7 +11,8 @@ public class StaffDashboard extends BaseDashboard {
         TabPane tabPane = new TabPane(
                 new OrderQueueTab(staff, OrderStatus.PENDING),
                 new OrderQueueTab(staff, OrderStatus.PROCESSING),
-                new OrderQueueTab(staff, OrderStatus.READY));
+                new OrderQueueTab(staff, OrderStatus.READY),
+                new BatchProcessTab(staff));
         Refreshable.enableAutoRefresh(tabPane);
         setCenter(tabPane);
     }
